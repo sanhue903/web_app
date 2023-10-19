@@ -47,6 +47,20 @@ class Module(models.Model):
     def __str__(self):
         return self.name
     
+class Question(models.Model):
+    name = models.CharField(
+        max_length=50, 
+        blank=False
+    )
+    description = models.TextField()
+    module = models.ForeignKey(
+        Module, 
+        on_delete=models.CASCADE
+    ) 
+    
+    def __str__(self):
+        return self.name
+    
 class Score(models.Model):
     attempts = models.IntegerField(null=False)
     duration = models.DurationField(null=False)
@@ -57,8 +71,8 @@ class Score(models.Model):
         null=False
     )
     
-    module = models.ForeignKey(
-        Module, 
+    question = models.ForeignKey(
+        Question, 
         on_delete=models.CASCADE,
         null=False
     )
