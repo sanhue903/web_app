@@ -6,6 +6,10 @@ from app.extensions import db
 from app.models.aule import Aule
 from app.models.user import User
 from app.models.school import School
+from app.models.mobile.mobile_app import MobileApp
+from app.models.mobile.chapter import Chapter
+from app.models.mobile.question import Question
+
 
 @pytest.fixture(scope='module') 
 def test_client():
@@ -35,3 +39,9 @@ def create_aule(test_client):
     yield 
     
     db.drop_all()
+    
+@pytest.fixture(scope='module')
+def create_app_mobile(test_client):
+    test_mobile_app = MobileApp('TESAPP', 'Test App')
+    test_chapter = Chapter('TESCHA', 'Test Chapter', test_mobile_app.id)
+    test_question = Question('TESQUE', 'Test Question', test_chapter.id)

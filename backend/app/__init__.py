@@ -19,6 +19,9 @@ def create_app(config_class=Config):
     
     from app.student import bp as student_bp
     app.register_blueprint(student_bp, url_prefix='/students')
+    
+    from app.score import bp as score_bp
+    app.register_blueprint(score_bp)
 
 
     return app
@@ -28,5 +31,9 @@ def create_database():
     from app.models.student import Student
     from app.models.aule import Aule
     from app.models.school import School
+    from backend.app.models.mobile.mobile_app import MobileApp
+    from app.models.mobile.chapter import Chapter
+    from app.models.mobile.question import Question
+    from app.models.mobile.score import Score
     
     db.create_all() 
