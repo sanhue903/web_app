@@ -1,4 +1,5 @@
 import os
+from flask_swagger_ui import get_swaggerui_blueprint
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -9,6 +10,16 @@ class Config:
 
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_RECORDS_QUERY = True
+    
+    SWAGGER_URL = '/swagger'
+    API_URL = '/static/swagger.json'
+    SWAGGER_BLUEPRINT = get_swaggerui_blueprint(
+        SWAGGER_URL,
+        API_URL,
+        config={
+            'app_name': 'Aule API'
+        }
+    )
     
 class TestingConfig(Config):
     TESTING = True

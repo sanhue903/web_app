@@ -22,6 +22,11 @@ def create_app(config_class=Config):
     
     from app.score import bp as score_bp
     app.register_blueprint(score_bp, url_prefix='/apps/<mobile_app_id>/aules/<aule_id>')
+    
+    from app.aules import bp as aules_bp
+    app.register_blueprint(aules_bp, url_prefix='/apps/<mobile_app_id>/aules')
+    
+    app.register_blueprint(config_class.SWAGGER_BLUEPRINT, url_prefix=config_class.SWAGGER_URL)
 
     return app
 
@@ -44,3 +49,17 @@ def initial_data():
     question_1 = Question('CETRIS', 'pregunta sobre la tristeza', chapter_1.id)
     db.session.add(question_1)
     db.session.commit()
+    
+    question_2 = Question('SORPRE', 'pregunta sobre la sorpresa', chapter_1.id)
+    db.session.add(question_2)
+    db.session.commit()
+    
+    chapter_2 = Chapter('REGEMO', 'Conciencia Emocional', mobile_app.id)
+    db.session.add(chapter_2)
+    db.session.commit()
+    
+    question_3 = Question('REGEM1', 'x', chapter_2.id)
+    db.session.add(question_3)
+    db.session.commit()
+    
+    

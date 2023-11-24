@@ -9,8 +9,8 @@ class Score(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
     question_id: Mapped[str] = mapped_column(ForeignKey('question.id'))
-    miliseconds: Mapped[int] = mapped_column(db.DateTime)#revisar default
-    attempts: Mapped[int] = mapped_column(db.Integer, default=1)
+    miliseconds: Mapped[int] 
+    attempts: Mapped[int]
     
     def __init__(self, student_id, question_id, miliseconds, attempts):
         self.student_id = student_id

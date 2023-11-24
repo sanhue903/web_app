@@ -1,16 +1,15 @@
 from app.extensions import db
 from app.score import bp as app
 from app.models import Student, Score, MobileApp, Chapter, Question, Aule
-from app.schemas import ScoreSchema
+from app.schemas import PostScoreSchema, GetScoreSchema
 from marshmallow import ValidationError
 
 from flask import jsonify, request
 
 @app.route('/students/scores', methods=['GET'])
-def get_student_scores(mobile_app_id, aule_id):
+def get_student_scores_from_aule(mobile_app_id, aule_id):
     aule = db.get_or_404(Aule, (aule_id, mobile_app_id), description=f'App with id {mobile_app_id} or Aule with id {aule_id} not found')
-
-    results = []
+    results = []    
     for chapter in aule.mobile_app.chapters:
         chapter_data = {
             'chapter': {
@@ -27,21 +26,31 @@ def get_student_scores(mobile_app_id, aule_id):
             for score in scores:
                 score_data = {
                     'student_id': score.student_id,
-                    'time': score.time,
+                    'miliseconds': score.miliseconds,
                     'attempts': score.attempts
                 }
                 question_data['score'].append(score_data)
             chapter_data['chapter']['question'].append(question_data)
         results.append(chapter_data)
         
+        
+    print(results)
     return jsonify({'results': results}), 200
+    
+    schema = GetScoreSchema()
+    try:
+        data = schema.load(results)
+    except ValidationError as err:
+        return jsonify(err.messages), 422
+        
+    return jsonify({'results': data}), 200
     
 
 @app.route('/students/scores', methods=['POST'])
 def post_student_scores():
     
     json_data = request.get_json()
-    schema = ScoreSchema()
+    schema = PostScoreSchema()
     try:
         data = schema.load(json_data)
     except ValidationError as err:

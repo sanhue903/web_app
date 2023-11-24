@@ -3,7 +3,7 @@ from app import create_app
 from config import TestingConfig
 
 from app.extensions import db
-from app.models import Aule, User, School, MobileApp, Chapter, Question, Student
+from app.models import Aule, User, School, MobileApp, Chapter, Question, Student, Score
 
 
 @pytest.fixture(scope='module') 
@@ -14,7 +14,7 @@ def test_client():
         with flask_app.app_context():
             yield testing_client
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='module')
 def create_base(test_client):
     db.create_all()
     
@@ -56,11 +56,64 @@ def create_students(test_client, create_base):
     
     yield [test_student, test_student_2, test_student_3]
     
-@pytest.fixture(scope='function')
+    db.session.delete(test_student)
+    db.session.delete(test_student_2)
+    db.session.delete(test_student_3)
+    db.session.commit()
+    
+@pytest.fixture(scope='module')
 def fill_app_mobile(test_client, create_base):
-    mobile_app = db.get_or_404(Aule, 'TESAU1', description=f'Aule with id TESAU1 not found')
+    test_chapter = Chapter('TESCHA', 'Test Chapter', 'TESAPP')
+    db.session.add(test_chapter)
     
-    test_chapter = Chapter('TESCHA', 'Test Chapter', mobile_app.id)
+    test_chapter_2 = Chapter('TESCH2', 'Test Chapter 2', 'TESAPP')
+    db.session.add(test_chapter_2)
+    
+    
     test_question = Question('TESQUE', 'Test Question', test_chapter.id)
+    db.session.add(test_question)
     
-    yield [mobile_app, test_chapter, test_question]
+    test_question_2 = Question('TESQU2', 'Test Question 2', test_chapter.id)
+    db.session.add(test_question_2)
+    
+    test_question_3 = Question('TESQU3', 'Test Question 3', test_chapter_2.id)
+    db.session.add(test_question_3)
+    db.session.commit()
+    
+    yield [test_chapter, test_chapter_2, test_question, test_question_2, test_question_3]
+    
+@pytest.fixture(scope='function')
+def create_scores(test_client, create_base, create_students, fill_app_mobile):
+    test_student = create_students[0]
+    test_student_2 = create_students[1]
+
+    
+    test_question = fill_app_mobile[2]
+    test_question_2 = fill_app_mobile[3]
+    test_question_3 = fill_app_mobile[4]
+    
+    score = Score(test_student.id, test_question.id, miliseconds=10000, attempts=1)
+    db.session.add(score)
+    
+    score_2 = Score(test_student.id, test_question_2.id, miliseconds=20000, attempts=2)
+    db.session.add(score_2)
+    
+    score_3 = Score(test_student_2.id, test_question.id, miliseconds=30000, attempts=3)
+    db.session.add(score_3)
+    
+    score_4 = Score(test_student_2.id, test_question_2.id, miliseconds=40000, attempts=4)
+    db.session.add(score_4)
+    
+    score_5 = Score(test_student_2.id, test_question_3.id, miliseconds=50000, attempts=5)
+    db.session.add(score_5)
+    
+    db.session.commit()
+    
+    yield [score, score_2, score_3, score_4, score_5]
+    
+    db.session.delete(score)
+    db.session.delete(score_2)
+    db.session.delete(score_3)
+    db.session.delete(score_4)
+    db.session.delete(score_5)
+    db.session.commit()
