@@ -18,22 +18,29 @@ def create_app(config_class=Config):
     # Register blueprints here
     
     from app.student import bp as student_bp
-    app.register_blueprint(student_bp, url_prefix='/students')
+    app.register_blueprint(student_bp, url_prefix='/apps/<mobile_app_id>')
     
     from app.score import bp as score_bp
-    app.register_blueprint(score_bp)
-
+    app.register_blueprint(score_bp, url_prefix='/apps/<mobile_app_id>/aules/<aule_id>')
 
     return app
 
 def create_database():
-    from app.models.user import User
-    from app.models.student import Student
-    from app.models.aule import Aule
-    from app.models.school import School
-    from backend.app.models.mobile.mobile_app import MobileApp
-    from app.models.mobile.chapter import Chapter
-    from app.models.mobile.question import Question
-    from app.models.mobile.score import Score
+    from app.models import User, Student, Aule, School, MobileApp, Chapter, Question, Score
     
     db.create_all() 
+    
+def initial_data():
+    from app.models import MobileApp, Chapter, Question
+
+    mobile_app = MobileApp('BOTIKI', 'El Botiquin de las Emociones')
+    db.session.add(mobile_app)
+    db.session.commit()
+
+    chapter_1 = Chapter('CONEMO', 'Conciencia Emocional', mobile_app.id)
+    db.session.add(chapter_1)
+    db.session.commit()
+    
+    question_1 = Question('CETRIS', 'pregunta sobre la tristeza', chapter_1.id)
+    db.session.add(question_1)
+    db.session.commit()

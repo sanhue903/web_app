@@ -1,7 +1,9 @@
 from app.extensions import ma
-from app.models.student import Student
+from app.models import Student
 
 class StudentSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        model = Student    
+        model = Student 
+        load_instance = True
+        exclude = ['id']
     

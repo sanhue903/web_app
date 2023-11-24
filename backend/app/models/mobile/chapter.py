@@ -9,7 +9,7 @@ class Chapter(db.Model):
     name: Mapped[str] = mapped_column(db.String(20))
     app_mobile_id: Mapped[str] = mapped_column(db.String(6), ForeignKey('mobile_app.id'))
     
-    questions: Mapped[List['Question']] = db.relationship(backref='chapters', lazy=True)
+    questions: Mapped[List['Question']] = db.relationship(backref='chapter', lazy=True)
     
     def __init__(self, id, name, app_mobile_id):
         self.id = id

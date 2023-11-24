@@ -9,12 +9,12 @@ class Question(db.Model):
     text: Mapped[str] = mapped_column(db.String(50))
     chapter_id: Mapped[str] = mapped_column(db.String(6), ForeignKey('chapter.id'))
     
-    scores: Mapped[List['Score']] = db.relationship(backref='questions', lazy=True)
+    scores: Mapped[List['Score']] = db.relationship(backref='question', lazy=True)
     
-    def __init__(self, id, text, app_mobile_id):
+    def __init__(self, id, text, chapter_id):
         self.id = id
         self.text = text
-        self.app_mobile_id = app_mobile_id
+        self.chapter_id = chapter_id
         
     def __repr__(self):
         return f'<Question {self.id}: {self.text}>'
