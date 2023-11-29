@@ -1,5 +1,6 @@
 from typing import List
 from sqlalchemy import ForeignKey
+from sqlalchemy.sql import functions
 from sqlalchemy.orm import Mapped, mapped_column
 import datetime
 
@@ -11,6 +12,7 @@ class Score(db.Model):
     question_id: Mapped[str] = mapped_column(ForeignKey('question.id'))
     miliseconds: Mapped[int] 
     attempts: Mapped[int]
+    date: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), server_default=functions.now())
     
     def __init__(self, student_id, question_id, miliseconds, attempts):
         self.student_id = student_id
