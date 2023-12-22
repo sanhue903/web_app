@@ -11,6 +11,8 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_RECORDS_QUERY = True
     
+    JWT_SECRET_KEY = "super-secret"
+    
     SWAGGER_URL = '/swagger'
     API_URL = '/static/swagger.json'
     SWAGGER_BLUEPRINT = get_swaggerui_blueprint(

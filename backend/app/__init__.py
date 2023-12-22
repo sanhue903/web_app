@@ -12,7 +12,10 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     ma.init_app(app)
-    lm.init_app(app)
+    jwt.init_app(app)
+    scheduler.init_app(app) 
+    
+    scheduler.start()
     
     with app.app_context():
         create_database()
@@ -23,10 +26,13 @@ def create_app(config_class=Config):
     app.register_blueprint(student_bp, url_prefix='/apps/<mobile_app_id>')
     
     from app.score import bp as score_bp
-    app.register_blueprint(score_bp, url_prefix='/apps/<mobile_app_id>/aules/<aule_id>')
+    app.register_blueprint(score_bp, url_prefix='/apps/<mobile_app_id>/aules/<aule_code>')
     
     from app.aules import bp as aules_bp
     app.register_blueprint(aules_bp, url_prefix='/apps/<mobile_app_id>/aules')
+    
+    from app.auth import bp as auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
     
     app.register_blueprint(config_class.SWAGGER_BLUEPRINT, url_prefix=config_class.SWAGGER_URL)
 

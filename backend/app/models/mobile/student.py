@@ -12,18 +12,10 @@ class Student(db.Model):
     last_name_2: Mapped[str] = mapped_column(db.String(15))
     age:         Mapped[int]
     
-    aule_id: Mapped[str] = mapped_column(db.String(6))
+    aule_id: Mapped[int] = mapped_column(ForeignKey('aule.id'))
     mobile_app_id: Mapped[str] = mapped_column(db.String(6))
     
-    scores: Mapped[List['Score']] = db.relationship(backref='student', lazy=True)
-    
-    __table_args__ = (
-        db.ForeignKeyConstraint(
-            ['aule_id', 'mobile_app_id'],
-            ['aule.id', 'aule.mobile_app_id']
-        ),
-    )
-    
+    scores: Mapped[List['Score']] = db.relationship(backref='student', lazy=True)    
     
     def __init__(self, first_name, last_name, last_name_2, age, aule_id, mobile_app_id):
         self.first_name = first_name

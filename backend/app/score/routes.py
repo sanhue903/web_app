@@ -3,12 +3,19 @@ from app.score import bp as app
 from app.models import Student, Score, MobileApp, Chapter, Question, Aule
 from app.schemas import PostScoreSchema, GetScoreSchema
 from marshmallow import ValidationError
+from flask_jwt_extended import jwt_required
 
 from flask import jsonify, request
 
+@jwt_required(locations=['cookies'])
 @app.route('/students/scores', methods=['GET'])
-def get_student_scores_from_aule(mobile_app_id, aule_id):
-    aule = db.get_or_404(Aule, (aule_id, mobile_app_id), description=f'App with id {mobile_app_id} or Aule with id {aule_id} not found')
+def get_student_scores_from_aule(aule_code):
+    
+    aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
+    
+    if aule is None:
+        return jsonify({'message': f'Aule with code {aule_code} not found'}), 404
+    
     results = []    
     for chapter in aule.mobile_app.chapters:
         chapter_data = {
@@ -22,7 +29,7 @@ def get_student_scores_from_aule(mobile_app_id, aule_id):
                 'id': question.id,
                 'score': []
             }
-            scores = db.session.scalars(db.select(Score).where(Score.question_id == question.id).where(Score.student_id == Student.id).where(Student.mobile_app_id == mobile_app_id).where(Student.aule_id == aule.id)).all()
+            scores = db.session.scalars(db.select(Score).where(Score.question_id == question.id).where(Score.student_id == Student.id).where(Student.aule_code == aule.code)).all()
             for score in scores:
                 score_data = {
                     'student_id': score.student_id,
@@ -36,7 +43,7 @@ def get_student_scores_from_aule(mobile_app_id, aule_id):
         
     print(results)
     return jsonify({'results': results}), 200
-    
+    #TODO fix schema
     schema = GetScoreSchema()
     try:
         data = schema.load(results)
@@ -45,26 +52,31 @@ def get_student_scores_from_aule(mobile_app_id, aule_id):
         
     return jsonify({'results': data}), 200
     
-
+@jwt_required(locations=['headers'])
 @app.route('/students/scores', methods=['POST'])
-def post_student_scores():
+def post_student_scores(aule_code):
+    
+    aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
+    
+    if aule is None:
+        return jsonify({'message': f'Aule with code {aule_code} not found'}), 404
     
     json_data = request.get_json()
     schema = PostScoreSchema()
     try:
-        data = schema.load(json_data)
+        validated_data = schema.load(json_data)
     except ValidationError as err:
         return jsonify(err.messages), 422
     
-    student_id = db.get_or_404(Student, data['student_id'], description=f'Student with id {data["student_id"]} not found')
-    db.get_or_404(MobileApp, data['app_mobile']['id'], description=f'AppMobile with id {data["app_mobile"]["id"]} not found')
-    db.get_or_404(Chapter, data['app_mobile']['chapter']['id'], description=f'Chapter with id {data["app_mobile"]["chapter"]["id"]} not found')
+    student = db.session.scalar(db.select(Student).where(Student.aule_id == aule.id).where(Student.id == validated_data['student_id']))
+    db.get_or_404(MobileApp, validated_data['app_mobile']['id'], description=f'AppMobile with id {validated_data["app_mobile"]["id"]} not found')
+    db.get_or_404(Chapter, validated_data['app_mobile']['chapter']['id'], description=f'Chapter with id {validated_data["app_mobile"]["chapter"]["id"]} not found')
     
     
-    for question in data['app_mobile']['chapter']['questions']:
+    for question in validated_data['app_mobile']['chapter']['questions']:
         db.get_or_404(Question, question['id'], description=f'Question with id {question["id"]} not found')
         
-        score = Score(student_id, question['id'], miliseconds=question['score']['time'], attempts=question['score']['attemps'])
+        score = Score(student.id, question['id'], miliseconds=question['score']['time'], attempts=question['score']['attemps'])
         db.session.add(score)
         db.session.commit()
     

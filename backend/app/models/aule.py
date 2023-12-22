@@ -1,27 +1,49 @@
 from typing import List
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
+import random
+import string
+import datetime
 
-from app.extensions import db
+from app.extensions import db, scheduler
 
 class Aule(db.Model):
-    id: Mapped[str] = mapped_column(db.String(6), primary_key=True)
-    mobile_app_id: Mapped[str] = mapped_column(db.String(6), ForeignKey('mobile_app.id'), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(db.String(6), nullable=True)
+    mobile_app_id: Mapped[str] = mapped_column(db.String(6), ForeignKey('mobile_app.id'))
     name: Mapped[str] = mapped_column(db.String(15))
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     school_id: Mapped[int] = mapped_column(ForeignKey('school.id'))
     
-    students: Mapped[List['Student']] = db.relationship(backref='aule', lazy=True)
+    students: Mapped[List['Student']] = db.relationship(backref='aule', lazy=True, )
     
-    __table_args_ = (
-        db.ForeignKeyConstraint(
-            ['id'],
-            ['mobile_app.id']
-        ),
-    )
+       
+    def generate_temporal_code(self):
+        #TODO buscar como generar un id temporal
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        
+        while db.session.scalar(db.select(Aule).where(Aule.code == code)):
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        
+        self.code = code
+            
+        return code
     
-    def __init__(self, id, mobile_app_id, name, user_id, school_id):
-        self.id = id
+    def reset_code(self):
+        self.code = None
+        db.session.commit()
+        
+    def schedule_reset_code(self):
+        scheduler.add_job(
+            func=self.reset_code,
+            trigger='date',
+            #TODO cambiar a delta de 2 horas
+            run_date=datetime.datetime.now() + datetime.timedelta(minutes=1),
+            id=f'reset_code_{self.id}'
+        )
+    
+    def __init__(self, mobile_app_id, name, user_id, school_id):
+        
         self.mobile_app_id = mobile_app_id
         self.name = name
         self.user_id = user_id
@@ -37,4 +59,3 @@ class Aule(db.Model):
             'user_id': self.user_id,
             'school_id': self.school_id
         }
-        

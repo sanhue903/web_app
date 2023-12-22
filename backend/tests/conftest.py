@@ -21,7 +21,7 @@ def create_base(test_client):
     test_school = School('Test School', 'Chillan Viejo', 'Ñuble')
     db.session.add(test_school)
     
-    test_user = User('test_user', 'seba@test.cl', 'sebastian', 'sanhueza', '903903')
+    test_user = User('test_user', 'seba@test.cl', 'testtest')
     db.session.add(test_user)
     
     test_mobile_app = MobileApp('TESAPP', 'Test App')
@@ -29,10 +29,10 @@ def create_base(test_client):
     
     db.session.commit()
     
-    test_aule = Aule('TESAU1',test_mobile_app.id, 'Test Aule', test_user.id, test_school.id) 
+    test_aule = Aule(test_mobile_app.id, 'Test Aule', test_user.id, test_school.id, 'TESAU1') 
     db.session.add(test_aule)
     
-    test_aule_2 = Aule('TESAU2',test_mobile_app.id, 'Test Aule 2', test_user.id, test_school.id)
+    test_aule_2 = Aule(test_mobile_app.id, 'Test Aule 2', test_user.id, test_school.id, 'TESAU2')
     db.session.add(test_aule_2)
     
     db.session.commit()

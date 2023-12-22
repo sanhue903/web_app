@@ -3,10 +3,11 @@ from app.student import bp as app
 from app.models import Student, Aule, MobileApp
 from app.schemas import StudentSchema
 from marshmallow import ValidationError
-
+from flask_jwt_extended import jwt_required
 
 from flask import jsonify, request
 
+@jwt_required(locations=['cookies'])
 @app.route('/students', methods=['GET'])
 def get_students_from_mobile_app(mobile_app_id):
     db.get_or_404(MobileApp, mobile_app_id, description=f'App with id {mobile_app_id} not found')
@@ -20,16 +21,18 @@ def get_students_from_mobile_app(mobile_app_id):
 
     return jsonify({'students': schema.dump(students)}), 200
 
+@jwt_required(locations=['cookies'])
 @app.route('/aules/<aule_id>/students', methods=['GET'])
 def get_students_from_aule(mobile_app_id, aule_id):       
-    aule = db.get_or_404(Aule, (aule_id, mobile_app_id), description=f'App with id {mobile_app_id} or Aule with id {aule_id} not found')
+    aule = db.get_or_404(Aule, aule_id, description=f'Aule with id {aule_id} not found')
     schema = StudentSchema(many=True)
     
     return jsonify({'students': schema.dump(aule.students)}), 200
-    
+ 
+@jwt_required(locations=['headers'])   
 @app.route('/aules/<aule_id>/students', methods=['POST'])    
-def post_student(mobile_app_id, aule_id):
-    db.get_or_404(Aule, (aule_id, mobile_app_id), description=f'App with id {mobile_app_id} or Aule with id {aule_id} not found')
+def post_student(aule_id):
+    db.get_or_404(Aule, aule_id, description=f'Aule with id {aule_id} not found')
     
     schema = StudentSchema()
     try:
