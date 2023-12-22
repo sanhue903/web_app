@@ -19,7 +19,6 @@ class Aule(db.Model):
     
        
     def generate_temporal_code(self):
-        #TODO buscar como generar un id temporal
         code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         
         while db.session.scalar(db.select(Aule).where(Aule.code == code)):
@@ -38,7 +37,7 @@ class Aule(db.Model):
             func=self.reset_code,
             trigger='date',
             #TODO cambiar a delta de 2 horas
-            run_date=datetime.datetime.now() + datetime.timedelta(minutes=1),
+            run_date=datetime.datetime.now() + datetime.timedelta(hours=2),
             id=f'reset_code_{self.id}'
         )
     
