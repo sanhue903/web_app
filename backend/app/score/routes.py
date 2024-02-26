@@ -10,7 +10,7 @@ from flask import jsonify, request
 @jwt_required(locations=['cookies'])
 @app.route('/students/scores', methods=['GET'])
 def get_student_scores_from_aule(aule_code):
-    
+    aule_code = aule_code.upper()
     aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
     
     if aule is None:
@@ -55,7 +55,7 @@ def get_student_scores_from_aule(aule_code):
 @jwt_required(locations=['headers'])
 @app.route('/students/scores', methods=['POST'])
 def post_student_scores(aule_code):
-    
+    aule_code = aule_code.upper()
     aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
     
     if aule is None:

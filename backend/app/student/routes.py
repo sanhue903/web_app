@@ -29,25 +29,30 @@ def get_students_from_aule(mobile_app_id, aule_id):
     
     return jsonify({'students': schema.dump(aule.students)}), 200
  
-@jwt_required(locations=['headers'])   
-@app.route('/aules/<aule_id>/students', methods=['POST'])    
-def post_student(aule_id):
-    db.get_or_404(Aule, aule_id, description=f'Aule with id {aule_id} not found')
+  
+@app.route('/aules/<aule_code>/students', methods=['POST'])    
+def post_student(mobile_app_id ,aule_code):
+    db.get_or_404(MobileApp, mobile_app_id, description=f'App with id {mobile_app_id} not found')
+    
+    aule_code = aule_code.upper()
+    aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
+    if aule is None:
+        return jsonify({'message': f'Aule with code {aule_code} not found'}), 404
     
     schema = StudentSchema()
+    data = request.get_json()
+    data['aule_id'] = aule.id
+    
+    print(data)
     try:
-        validated_data = schema.load(request.get_json())
+        validated_data = schema.load(data)
     except ValidationError as err:
+        print(err.messages)
         return jsonify(err.messages), 422
     
-    student = create_student(validated_data)
-
-    return jsonify({'student': schema.dump(student)}), 201
-
-def create_student(data):
-    new_student = Student(**data)
-    db.session.add(new_student)
+    db.session.add(validated_data)
     db. session.commit()
-    
-    return new_student
+
+    return jsonify({'student': schema.dump(validated_data)}), 201
+
     

@@ -13,6 +13,7 @@ class Aule(db.Model):
     mobile_app_id: Mapped[str] = mapped_column(db.String(6), ForeignKey('mobile_app.id'))
     name: Mapped[str] = mapped_column(db.String(15))
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    #TODO cambiar a nullable=False
     school_id: Mapped[int] = mapped_column(ForeignKey('school.id'))
     
     students: Mapped[List['Student']] = db.relationship(backref='aule', lazy=True, )
@@ -32,14 +33,15 @@ class Aule(db.Model):
         self.code = None
         db.session.commit()
         
-    def schedule_reset_code(self):
-        scheduler.add_job(
-            func=self.reset_code,
-            trigger='date',
-            #TODO cambiar a delta de 2 horas
-            run_date=datetime.datetime.now() + datetime.timedelta(hours=2),
-            id=f'reset_code_{self.id}'
-        )
+    def schedule_reset_code(self, app):
+        with app.app_context():
+            scheduler.add_job(
+                func=self.reset_code,
+                trigger='date',
+                #TODO cambiar a delta de 2 horas
+                run_date=datetime.datetime.now() + datetime.timedelta(minutes=10),
+                id=f'reset_code_{self.id}'
+            )
     
     def __init__(self, mobile_app_id, name, user_id, school_id):
         

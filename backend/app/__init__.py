@@ -13,6 +13,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     ma.init_app(app)
     jwt.init_app(app)
+    migrate.init_app(app, db)
     scheduler.init_app(app) 
     
     scheduler.start()
@@ -22,18 +23,23 @@ def create_app(config_class=Config):
 
     # Register blueprints here
     
+    from app.main import bp as main_bp
+    app.register_blueprint(main_bp)
+    
     from app.student import bp as student_bp
     app.register_blueprint(student_bp, url_prefix='/apps/<mobile_app_id>')
     
     from app.score import bp as score_bp
     app.register_blueprint(score_bp, url_prefix='/apps/<mobile_app_id>/aules/<aule_code>')
     
-    from app.aules import bp as aules_bp
+    from app.aule import bp as aules_bp
     app.register_blueprint(aules_bp, url_prefix='/apps/<mobile_app_id>/aules')
     
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
     
+    
+    ### Swagger ###
     app.register_blueprint(config_class.SWAGGER_BLUEPRINT, url_prefix=config_class.SWAGGER_URL)
 
     return app

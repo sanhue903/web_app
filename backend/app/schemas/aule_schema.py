@@ -5,4 +5,5 @@ class AuleSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Aule 
         load_instance = True
-        exclude = ['mobile_app_id', 'students']
+        include_fk = True
+        exclude = ['id', 'code','students']

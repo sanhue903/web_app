@@ -5,5 +5,6 @@ class StudentSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Student 
         load_instance = True
+        include_fk = True
         exclude = ['id']
     
