@@ -27,10 +27,10 @@ def create_app(config_class=Config):
     app.register_blueprint(main_bp)
     
     from app.student import bp as student_bp
-    app.register_blueprint(student_bp, url_prefix='/apps/<mobile_app_id>')
+    app.register_blueprint(student_bp, url_prefix='/apps/<mobile_app_id>/aules')
     
     from app.score import bp as score_bp
-    app.register_blueprint(score_bp, url_prefix='/apps/<mobile_app_id>/aules/<aule_code>')
+    app.register_blueprint(score_bp, url_prefix='/apps/<mobile_app_id>/aules/<aule_code>/students')
     
     from app.aule import bp as aules_bp
     app.register_blueprint(aules_bp, url_prefix='/apps/<mobile_app_id>/aules')
