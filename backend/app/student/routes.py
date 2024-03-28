@@ -22,7 +22,7 @@ def get_students_from_mobile_app(mobile_app_id):
     return jsonify({'students': schema.dump(students)}), 200
 
 @jwt_required(locations=['cookies'])
-@app.route('/aules/<aule_id>/students', methods=['GET'])
+@app.route('/<aule_id>/students', methods=['GET'])
 def get_students_from_aule(mobile_app_id, aule_id):       
     aule = db.get_or_404(Aule, aule_id, description=f'Aule with id {aule_id} not found')
     schema = StudentSchema(many=True)
@@ -30,7 +30,7 @@ def get_students_from_aule(mobile_app_id, aule_id):
     return jsonify({'students': schema.dump(aule.students)}), 200
  
   
-@app.route('/aules/<aule_code>/students', methods=['POST'])    
+@app.route('/<aule_code>/students', methods=['POST'])    
 def post_student(mobile_app_id ,aule_code):
     db.get_or_404(MobileApp, mobile_app_id, description=f'App with id {mobile_app_id} not found')
     
@@ -42,8 +42,8 @@ def post_student(mobile_app_id ,aule_code):
     schema = StudentSchema()
     data = request.get_json()
     data['aule_id'] = aule.id
+    data['mobile_app_id'] = mobile_app_id
     
-    print(data)
     try:
         validated_data = schema.load(data)
     except ValidationError as err:
