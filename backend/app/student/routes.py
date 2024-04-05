@@ -55,4 +55,10 @@ def post_student(mobile_app_id ,aule_code):
 
     return jsonify({'student': schema.dump(validated_data)}), 201
 
+@app.route('/<aule_code>/students/<student_id>', methods=['GET'])
+def get_completed_chapters(mobile_app_id, aule_code, student_id):
+    
+    
+    return
+
     

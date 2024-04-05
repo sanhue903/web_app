@@ -6,13 +6,15 @@ from app.extensions import db
 
 class Chapter(db.Model):
     id: Mapped[str] = mapped_column(db.String(6), primary_key=True)
+    number: Mapped[int] 
     name: Mapped[str] = mapped_column(db.String(20))
     app_mobile_id: Mapped[str] = mapped_column(db.String(6), ForeignKey('mobile_app.id'))
     
     questions: Mapped[List['Question']] = db.relationship(backref='chapter', lazy=True)
     
-    def __init__(self, id, name, app_mobile_id):
+    def __init__(self, id, number, name, app_mobile_id):
         self.id = id
+        self.number = number
         self.name = name
         self.app_mobile_id = app_mobile_id
         
