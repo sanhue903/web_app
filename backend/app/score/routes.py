@@ -76,7 +76,7 @@ def post_student_scores(aule_code):
     for question in validated_data['app_mobile']['chapter']['questions']:
         db.get_or_404(Question, question['id'], description=f'Question with id {question["id"]} not found')
         
-        score = Score(student.id, question['id'], miliseconds=question['score']['time'], attempts=question['score']['attemps'])
+        score = Score(student.id, question['id'], seconds=question['score']['time'], is_correct=question['score']['is_correct'], answer=question['score']['answer'])
         db.session.add(score)
         db.session.commit()
     

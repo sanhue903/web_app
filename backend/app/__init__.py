@@ -56,24 +56,22 @@ def initial_data():
     db.session.add(mobile_app)
     db.session.commit()
 
-    chapter_1 = Chapter('CONEMO', 'Conciencia Emocional', mobile_app.id)
+    chapter_1 = Chapter('CONEMO', 1,'Conciencia Emocional', mobile_app.id)
     db.session.add(chapter_1)
     db.session.commit()
     
-    question_1 = Question('CETRIS', 'pregunta sobre la tristeza', chapter_1.id)
+    question_1 = Question('CETRIS','pregunta sobre la tristeza', chapter_1.id, False)
     db.session.add(question_1)
     db.session.commit()
     
-    question_2 = Question('SORPRE', 'pregunta sobre la sorpresa', chapter_1.id)
+    question_2 = Question('SORPRE', 'pregunta sobre la sorpresa', chapter_1.id, True)
     db.session.add(question_2)
     db.session.commit()
     
-    chapter_2 = Chapter('REGEMO', 'Conciencia Emocional', mobile_app.id)
+    chapter_2 = Chapter('REGEMO', 2,'Conciencia Emocional', mobile_app.id)
     db.session.add(chapter_2)
     db.session.commit()
     
-    question_3 = Question('REGEM1', 'x', chapter_2.id)
+    question_3 = Question('REGEM1', 'x', chapter_2.id, True)
     db.session.add(question_3)
     db.session.commit()
-    
-    

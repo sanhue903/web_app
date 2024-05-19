@@ -92,19 +92,19 @@ def create_scores(test_client, create_base, create_students, fill_app_mobile):
     test_question_2 = fill_app_mobile[3]
     test_question_3 = fill_app_mobile[4]
     
-    score = Score(test_student.id, test_question.id, miliseconds=10000, attempts=1)
+    score = Score(test_student.id, test_question.id, seconds=10000, is_correct=1)
     db.session.add(score)
     
-    score_2 = Score(test_student.id, test_question_2.id, miliseconds=20000, attempts=2)
+    score_2 = Score(test_student.id, test_question_2.id, seconds=20000, is_correct=2)
     db.session.add(score_2)
     
-    score_3 = Score(test_student_2.id, test_question.id, miliseconds=30000, attempts=3)
+    score_3 = Score(test_student_2.id, test_question.id, seconds=30000, is_correct=3)
     db.session.add(score_3)
     
-    score_4 = Score(test_student_2.id, test_question_2.id, miliseconds=40000, attempts=4)
+    score_4 = Score(test_student_2.id, test_question_2.id, seconds=40000, is_correct=4)
     db.session.add(score_4)
     
-    score_5 = Score(test_student_2.id, test_question_3.id, miliseconds=50000, attempts=5)
+    score_5 = Score(test_student_2.id, test_question_3.id, seconds=50000, is_correct=5)
     db.session.add(score_5)
     
     db.session.commit()

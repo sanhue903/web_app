@@ -3,16 +3,14 @@ from marshmallow import fields, validate
 
 
 class InnerScoreSchema(ma.Schema):
-    miliseconds = fields.Int(required=True)
-    attempts = fields.Int(required=True)
-
-class QuestionSchema(ma.Schema):
-    id = fields.Str(required=True, validate=validate.Length(min=6, max=6))
-    score = fields.Nested(InnerScoreSchema, required=True)
+    seconds = fields.Float(required=True)
+    is_correct = fields.Boolean(required=True)
+    answer = fields.Str(required=True)
+    question_id = fields.Str(required=True, validate=validate.Length(min=6, max=6))
 
 class ChapterSchema(ma.Schema):
     id = fields.Str(required=True, validate=validate.Range(min=6, max=6))
-    questions = fields.List(fields.Nested(QuestionSchema), required=True)
+    scores = fields.List(fields.Nested(InnerScoreSchema), required=True)
 
 class AppMobileSchema(ma.Schema):
     id = fields.Str(required=True, validate=validate.Range(min=6, max=6))

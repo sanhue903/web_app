@@ -3,8 +3,9 @@ from marshmallow import fields, validate
 
 class InnerScoreSchema(ma.Schema):
     student_id = fields.Integer(required=True)
-    miliseconds = fields.Integer(required=True)
-    attempts = fields.Integer(required=True)
+    seconds = fields.Float(required=True)
+    is_correct = fields.Boolean(required=True)
+    answer = fields.String(required=True)
 
 class QuestionSchema(ma.Schema):
     id = fields.Str(required=True, validate=validate.Length(equal=6))
