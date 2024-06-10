@@ -1,15 +1,17 @@
 from app.aule import bp as app
 from app.extensions import db
-from app.models import Aule, MobileApp
+from app.models import Aule, Application
 from app.schemas import AuleSchema
 from flask_jwt_extended import jwt_required
 
 from flask import request, jsonify, current_app
 
+#TODO modificar todas las funciones
+
 @jwt_required(locations=['cookies'])
 @app.route('', methods=['GET'])
 def get_aules(mobile_app_id):
-    db.get_or_404(MobileApp, mobile_app_id, description=f'MobileApp with id {mobile_app_id} not found')
+    db.get_or_404(Application, mobile_app_id, description=f'MobileApp with id {mobile_app_id} not found')
     
     aules = db.session.scalars(db.select(Aule).where(Aule.mobile_app_id == mobile_app_id)).all()
     
@@ -32,7 +34,7 @@ def post_aule(mobile_app_id):
 @app.route('/<aule_code>', methods=['GET'])
 def get_aule(mobile_app_id, aule_code):
     aule_code = aule_code.upper()
-    db.get_or_404(MobileApp, mobile_app_id, description=f'MobileApp with id {mobile_app_id} not found')
+    db.get_or_404(Application, mobile_app_id, description=f'MobileApp with id {mobile_app_id} not found')
     
     schema = AuleSchema()
     aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
@@ -45,7 +47,7 @@ def get_aule(mobile_app_id, aule_code):
 @jwt_required(locations=['cookies'])
 @app.route('/<aule_id>', methods=['PUT'])       
 def open_aule(mobile_app_id,aule_id):
-    db.get_or_404(MobileApp, mobile_app_id, description=f'MobileApp with id {mobile_app_id} not found')
+    db.get_or_404(Application, mobile_app_id, description=f'MobileApp with id {mobile_app_id} not found')
     
     aule = db.get_or_404(Aule, aule_id, description=f'Aule with id {aule_id} not found')
     aule.generate_temporal_code()

@@ -8,12 +8,13 @@ from app.extensions import db
 
 class Score(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
-    question_id: Mapped[str] = mapped_column(ForeignKey('question.id'))
+    answer: Mapped[str] = mapped_column(db.String(50), default='')
     seconds: Mapped[float] = mapped_column(default=0.0)
     is_correct: Mapped[bool] = mapped_column(default=False)
-    answer: Mapped[str] = mapped_column(db.String(50), default='')
     date: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), server_default=functions.now())
+
+    student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
+    question_id: Mapped[str] = mapped_column(ForeignKey('question.id'))
     
     def __init__(self, student_id, question_id, seconds, is_correct, answer):
         self.student_id = student_id

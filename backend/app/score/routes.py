@@ -1,6 +1,6 @@
 from app.extensions import db
 from app.score import bp as app
-from app.models import Student, Score, MobileApp, Chapter, Question, Aule
+from app.models import Student, Score, Application, Chapter, Question, Aule
 from app.schemas import PostScoreSchema, GetScoreSchema
 from marshmallow import ValidationError
 from flask_jwt_extended import jwt_required
@@ -69,7 +69,7 @@ def post_student_scores(aule_code):
         return jsonify(err.messages), 422
     
     student = db.session.scalar(db.select(Student).where(Student.aule_id == aule.id).where(Student.id == validated_data['student_id']))
-    db.get_or_404(MobileApp, validated_data['app_mobile']['id'], description=f'AppMobile with id {validated_data["app_mobile"]["id"]} not found')
+    db.get_or_404(Application, validated_data['app_mobile']['id'], description=f'AppMobile with id {validated_data["app_mobile"]["id"]} not found')
     db.get_or_404(Chapter, validated_data['app_mobile']['chapter']['id'], description=f'Chapter with id {validated_data["app_mobile"]["chapter"]["id"]} not found')
     
     
@@ -81,19 +81,3 @@ def post_student_scores(aule_code):
         db.session.commit()
     
     return jsonify({'message': 'scores added correcly'}), 201
-
-@app.route('/<student_id>/scores', methods=['GET'])
-def get_completed_chapters(aule_code, student_id):
-    aule_code = aule_code.upper()
-    aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
-    
-    if aule is None:
-        return jsonify({'message': f'Aule with code {aule_code} not found'}), 404
-    
-    student = db.session.scalars(db.select(Student).where(Student.aule_id == aule.id)).all()
-    
-    chapters_id = set()
-    for score in student.scores:
-        chapters_id.add(score.question.chapter_id) if score.question.is_final else None
-        
-    return jsonify({'completed_chapters_id': list(chapters_id)}), 200

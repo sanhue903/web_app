@@ -3,7 +3,7 @@ from app import create_app
 from config import TestingConfig
 
 from app.extensions import db
-from app.models import Aule, User, School, MobileApp, Chapter, Question, Student, Score
+from app.models import Aule, User, School, Application, Chapter, Question, Student, Score
 
 
 @pytest.fixture(scope='module') 
@@ -24,7 +24,7 @@ def create_base(test_client):
     test_user = User('test_user', 'seba@test.cl', 'testtest')
     db.session.add(test_user)
     
-    test_mobile_app = MobileApp('TESAPP', 'Test App')
+    test_mobile_app = Application('TESAPP', 'Test App')
     db.session.add(test_mobile_app)
     
     db.session.commit()

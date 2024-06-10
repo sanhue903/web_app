@@ -1,54 +1,48 @@
 from typing import List
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-import random
-import string
-import datetime
+#import random
+#import string
+#import datetime
 
-from app.extensions import db, scheduler
+from app.extensions import db#, scheduler
 
 class Aule(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(db.String(6), nullable=True)
-    mobile_app_id: Mapped[str] = mapped_column(db.String(6), ForeignKey('mobile_app.id'))
     name: Mapped[str] = mapped_column(db.String(15))
+
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
-    #TODO cambiar a nullable=False
-    school_id: Mapped[int] = mapped_column(ForeignKey('school.id'))
+
+    students: Mapped[List['AuleStudentRelationship']] = db.relationship(backref='aule', lazy=True)
+    #code: Mapped[str] = mapped_column(db.String(6), nullable=True)
     
-    students: Mapped[List['Student']] = db.relationship(backref='aule', lazy=True, )
-    
-       
-    def generate_temporal_code(self):
-        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    #def generate_temporal_code(self):
+    #    code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         
-        while db.session.scalar(db.select(Aule).where(Aule.code == code)):
-            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    #    while db.session.scalar(db.select(Aule).where(Aule.code == code)):
+    #        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         
-        self.code = code
+    #    self.code = code
             
-        return code
+    #    return code
     
-    def reset_code(self):
-        self.code = None
-        db.session.commit()
+    #def reset_code(self):
+    #    self.code = None
+    #    db.session.commit()
         
-    def schedule_reset_code(self, app):
-        with app.app_context():
-            scheduler.add_job(
-                func=self.reset_code,
-                trigger='date',
-                #TODO cambiar a delta de 2 horas
-                run_date=datetime.datetime.now() + datetime.timedelta(minutes=10),
-                id=f'reset_code_{self.id}'
-            )
+    #def schedule_reset_code(self, app):
+    #    with app.app_context():
+    #        scheduler.add_job(
+    #            func=self.reset_code,
+    #            trigger='date',
+    #            #TODO cambiar a delta de 2 horas
+    #            run_date=datetime.datetime.now() + datetime.timedelta(minutes=10),
+    #            id=f'reset_code_{self.id}'
+    #        )
     
-    def __init__(self, mobile_app_id, name, user_id, school_id):
-        
-        self.mobile_app_id = mobile_app_id
+    def __init__(self, name, user_id):
         self.name = name
         self.user_id = user_id
-        self.school_id = school_id
     
     def __repr__(self):
         return f'<Aule {self.id}: {self.name}>'
@@ -56,7 +50,5 @@ class Aule(db.Model):
     def serialize(self):
         return {
             'id': self.id,
-            'app': self.mobile_app_id,
             'user_id': self.user_id,
-            'school_id': self.school_id
         }

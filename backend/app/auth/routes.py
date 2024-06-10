@@ -7,30 +7,7 @@ from flask_jwt_extended import create_access_token, set_access_cookies
 
 from flask import jsonify, request
 
-
 @app.route('/login', methods=['GET'])
-def login_web():
-    data = request.get_json()
-    schema = LoginSchema()
-    
-    try:
-        validated_data = schema.load(data)
-    except ValidationError as err:
-        return jsonify(err.messages), 422
-    
-    user = db.session.scalar(db.select(User).where(User.username == validated_data['username']))
-   
-    if not user.check_password(validated_data['password']):
-        return jsonify({'message': 'Wrong password'}), 401
-    
-    access_token = create_access_token(identity=user.id)
-    
-    response = jsonify({'message': 'login successful'}), 200
-    set_access_cookies(response, access_token)
-    
-    return response 
-
-@app.route('/api/login', methods=['GET'])
 def login_api():
     data = request.get_json()
     schema = LoginSchema()

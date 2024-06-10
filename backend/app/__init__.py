@@ -14,9 +14,9 @@ def create_app(config_class=Config):
     ma.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
-    scheduler.init_app(app) 
+    #scheduler.init_app(app) 
     
-    scheduler.start()
+    #scheduler.start()
     
     with app.app_context():
         create_database()
@@ -27,13 +27,13 @@ def create_app(config_class=Config):
     app.register_blueprint(main_bp)
     
     from app.student import bp as student_bp
-    app.register_blueprint(student_bp, url_prefix='/apps/<mobile_app_id>/aules')
+    app.register_blueprint(student_bp, url_prefix='/apps/<app_id>')
     
     from app.score import bp as score_bp
-    app.register_blueprint(score_bp, url_prefix='/apps/<mobile_app_id>/aules/<aule_code>/students')
+    app.register_blueprint(score_bp, url_prefix='/apps/<app_id>/students')
     
     from app.aule import bp as aules_bp
-    app.register_blueprint(aules_bp, url_prefix='/apps/<mobile_app_id>/aules')
+    app.register_blueprint(aules_bp, url_prefix='/aules')
     
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -45,14 +45,14 @@ def create_app(config_class=Config):
     return app
 
 def create_database():
-    from app.models import User, Student, Aule, School, MobileApp, Chapter, Question, Score
+    from app.models import User, Student, Aule, Application, Chapter, Question, Score, AuleStudentRelationship
     
     db.create_all() 
     
 def initial_data():
-    from app.models import MobileApp, Chapter, Question
+    from app.models import Application, Chapter, Question
 
-    mobile_app = MobileApp('BOTIKI', 'El Botiquin de las Emociones')
+    mobile_app = Application('BOTIKI', 'El Botiquin de las Emociones')
     db.session.add(mobile_app)
     db.session.commit()
 
@@ -60,18 +60,34 @@ def initial_data():
     db.session.add(chapter_1)
     db.session.commit()
     
-    question_1 = Question('CETRIS','pregunta sobre la tristeza', chapter_1.id, False)
-    db.session.add(question_1)
+    question_1_1 = Question('CONEM1', 'CONEMO', '¿Como?')
+    db.session.add(question_1_1)
     db.session.commit()
-    
-    question_2 = Question('SORPRE', 'pregunta sobre la sorpresa', chapter_1.id, True)
-    db.session.add(question_2)
-    db.session.commit()
-    
-    chapter_2 = Chapter('REGEMO', 2,'Conciencia Emocional', mobile_app.id)
+
+    chapter_2 = Chapter('REGEMO', 2, 'Conciencia Emocional', mobile_app.id)
     db.session.add(chapter_2)
     db.session.commit()
     
-    question_3 = Question('REGEM1', 'x', chapter_2.id, True)
-    db.session.add(question_3)
+    chapter_3 = Chapter('AUTEMO', 3,'Autonomia Emocional', mobile_app.id)
+    db.session.add(chapter_3)
     db.session.commit()
+    
+    question_3_1_1 = Question('AUTE11', 'AUTEMO', '¿Cómo se sentia Jacinta en su primer dia de colegio?')
+    question_3_1_2 = Question('AUTE12', 'AUTEMO', '¿Qué hizo Jacinta al darse cuenta que cambió de color?')
+    question_3_1_3 = Question('AUTE13', 'AUTEMO', '¿Por qué Jacinta decidió mostrar sus colores?')
+    question_3_1_4 = Question('AUTE14', 'AUTEMO', '¿Por qué es importante que Jacinta siga adelante, a pesar de sentirse avergonzada?')
+    question_3_1_5 = Question('AUTE15', 'AUTEMO', '¿Por qué Jacinta hablaba sola frente al espejo cuando sentía que todos se reirían de ella por estar llena de colores?')
+    question_3_1_6 = Question('AUTE16', 'AUTEMO', '¿Qué aprendió Jacinta cuando entró a la sala de clases y vio a todos los demás llenos de color también?')
+    db.session.add(question_3_1_1)
+    db.session.add(question_3_1_2)
+    db.session.add(question_3_1_3)
+    db.session.add(question_3_1_4)
+    db.session.add(question_3_1_5)
+    db.session.add(question_3_1_6)
+    db.session.commit()
+    
+    
+    chapter_4 = Chapter('COMEMO', 4,'Competencia Emocional', mobile_app.id)
+    db.session.add(chapter_4)
+    db.session.commit()
+ 
