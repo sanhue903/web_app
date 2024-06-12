@@ -7,9 +7,12 @@ from flask_jwt_extended import jwt_required
 
 from flask import jsonify, request
 
+def get_scores_from_student():
+    pass
+
 @jwt_required(locations=['cookies'])
 @app.route('/scores', methods=['GET'])
-def get_student_scores_from_aule(aule_code):
+def get_scores_from_students(aule_code):
     aule_code = aule_code.upper()
     aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
     
@@ -52,15 +55,9 @@ def get_student_scores_from_aule(aule_code):
         
     return jsonify({'results': data}), 200
     
-@jwt_required(locations=['headers'])
 @app.route('/scores', methods=['POST'])
-def post_student_scores(aule_code):
-    aule_code = aule_code.upper()
-    aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
-    
-    if aule is None:
-        return jsonify({'message': f'Aule with code {aule_code} not found'}), 404
-    
+@jwt_required(locations=['headers'])
+def post_student_scores():
     json_data = request.get_json()
     schema = PostScoreSchema()
     try:
@@ -68,7 +65,7 @@ def post_student_scores(aule_code):
     except ValidationError as err:
         return jsonify(err.messages), 422
     
-    student = db.session.scalar(db.select(Student).where(Student.aule_id == aule.id).where(Student.id == validated_data['student_id']))
+    student = db.session.scalar(db.select(Student).where(Student.id == validated_data['student_id']))
     db.get_or_404(Application, validated_data['app_mobile']['id'], description=f'AppMobile with id {validated_data["app_mobile"]["id"]} not found')
     db.get_or_404(Chapter, validated_data['app_mobile']['chapter']['id'], description=f'Chapter with id {validated_data["app_mobile"]["chapter"]["id"]} not found')
     

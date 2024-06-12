@@ -3,7 +3,7 @@ from app import create_app
 from config import TestingConfig
 
 from app.extensions import db
-from app.models import Aule, User, School, Application, Chapter, Question, Student, Score
+from app.models import Aule, User, Application, Chapter, Question, Student, Score
 
 
 @pytest.fixture(scope='module') 

@@ -3,12 +3,13 @@ from app.extensions import db
 from app.models import User
 from app.schemas import LoginSchema, SignUpSchema
 from marshmallow import ValidationError
+from datetime import timedelta
 from flask_jwt_extended import create_access_token, set_access_cookies
 
 from flask import jsonify, request
 
-@app.route('/login', methods=['GET'])
-def login_api():
+@app.route('/login', methods=['POST'])
+def login():
     data = request.get_json()
     schema = LoginSchema()
     
@@ -18,16 +19,18 @@ def login_api():
         return jsonify(err.messages), 422
     
     user = db.session.scalar(db.select(User).where(User.username == validated_data['username']))
+    if user is None:
+        return jsonify({'message': 'User not found'}), 404
    
     if not user.check_password(validated_data['password']):
         return jsonify({'message': 'Wrong password'}), 401
     
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=user.id,expires_delta=timedelta(days=30))
     
-    response = jsonify({'token': access_token}), 200
-
+    response = jsonify({'token': access_token}), 201
     
     return response 
+    
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -42,7 +45,7 @@ def signup():
     if db.session.scalar(db.select(User).where(User.username == validated_data['username'])) is not None:
         return jsonify({'message': 'User already exists'}), 409
     
-    if db.session.scalar(db.select(User).where(User.username == validated_data['username'])) is not None:
+    if db.session.scalar(db.select(User).where(User.email == validated_data['email'])) is not None:
         return jsonify({'message': 'this email adress has already been registered'}), 409
     
     

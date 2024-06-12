@@ -1,12 +1,13 @@
 from flask import Flask
 from flask_cors import CORS
-from config import Config
+from config import *
 
 from app.extensions import *
 
-def create_app(config_class=Config):
+def create_app(config_class: Config= Development):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    CORS(app)
 
     # Initialize Flask extensions here
 
@@ -23,20 +24,20 @@ def create_app(config_class=Config):
 
     # Register blueprints here
     
-    from app.main import bp as main_bp
-    app.register_blueprint(main_bp)
-    
     from app.student import bp as student_bp
-    app.register_blueprint(student_bp, url_prefix='/apps/<app_id>')
+    app.register_blueprint(student_bp, url_prefix='/apps/<app_id>/students')
     
     from app.score import bp as score_bp
     app.register_blueprint(score_bp, url_prefix='/apps/<app_id>/students')
     
-    from app.aule import bp as aules_bp
-    app.register_blueprint(aules_bp, url_prefix='/aules')
+    #from app.aule import bp as aules_bp
+    #app.register_blueprint(aules_bp, url_prefix='/aules')
     
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
+    
+    from app.application import bp as application_bp
+    app.register_blueprint(application_bp, url_prefix='/apps')
     
     
     ### Swagger ###
@@ -51,24 +52,20 @@ def create_database():
     
 def initial_data():
     from app.models import Application, Chapter, Question
+    app_id = 'BOTIKI'
 
-    mobile_app = Application('BOTIKI', 'El Botiquin de las Emociones')
-    db.session.add(mobile_app)
-    db.session.commit()
-
-    chapter_1 = Chapter('CONEMO', 1,'Conciencia Emocional', mobile_app.id)
-    db.session.add(chapter_1)
+    chapter_1 = Chapter('CONEMO', 1,'Conciencia Emocional', app_id)
     db.session.commit()
     
     question_1_1 = Question('CONEM1', 'CONEMO', '¿Como?')
     db.session.add(question_1_1)
     db.session.commit()
 
-    chapter_2 = Chapter('REGEMO', 2, 'Conciencia Emocional', mobile_app.id)
+    chapter_2 = Chapter('REGEMO', 2, 'Conciencia Emocional', app_id)
     db.session.add(chapter_2)
     db.session.commit()
     
-    chapter_3 = Chapter('AUTEMO', 3,'Autonomia Emocional', mobile_app.id)
+    chapter_3 = Chapter('AUTEMO', 3,'Autonomia Emocional', app_id)
     db.session.add(chapter_3)
     db.session.commit()
     
@@ -87,7 +84,7 @@ def initial_data():
     db.session.commit()
     
     
-    chapter_4 = Chapter('COMEMO', 4,'Competencia Emocional', mobile_app.id)
+    chapter_4 = Chapter('COMEMO', 4,'Competencia Emocional', app_id)
     db.session.add(chapter_4)
     db.session.commit()
  

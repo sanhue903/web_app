@@ -1,23 +1,28 @@
 from app.extensions import db
 from app.student import bp as app
-from app.models import Student, Application
+from app.models import Student, Application, User
 from app.schemas import StudentSchema
 from marshmallow import ValidationError
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from flask import jsonify, request
 
-@jwt_required(locations=['cookies'])
-@app.route('/students', methods=['GET'])
+@app.route('',methods=['GET'])
+@jwt_required(locations=['headers'])
 def get_students_from_app(app_id):
     app = db.session.scalar(db.select(Application).where(Application.id == app_id))
     if app is None:
         return jsonify({'message': f'App with id {app_id} not found'}), 404
     
+    user_id = get_jwt_identity()
+    user = db.session.scalar(db.select(User).where(User.id == user_id))
+    if user is None:
+        return jsonify({'message': 'Unauthorized'}), 401
+    
     page_number = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 20, type=int)
 
-    students = db.paginate(db.select(Student).where(Student.app_id == app_id), page=page_number, per_page=limit).items
+    students = db.paginate(db.select(Student).where(Student.app_id == app_id), page=page_number, per_page=limit,max_per_page=100).items
     
     schema = StudentSchema(many=True)
 
@@ -32,11 +37,15 @@ def get_students_from_app(app_id):
 #    return jsonify({'students': schema.dump(aule.students)}), 200
  
   
-@app.route('/students', methods=['POST'])    
+@app.route('',methods=['POST'])    
+@jwt_required(locations=['headers'])
 def post_student(app_id):
     app = db.session.scalar(db.select(Application).where(Application.id == app_id))
     if app is None:
         return jsonify({'message': f'App with id {app_id} not found'}), 404
+    
+    if get_jwt_identity() != app_id:
+        return jsonify({'message': 'Unauthorized'}), 401
     
     schema = StudentSchema()
 
