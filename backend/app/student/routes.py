@@ -19,10 +19,10 @@ def get_students_from_app(app_id):
     if user is None:
         return jsonify({'message': 'Unauthorized'}), 401
     
-    page_number = request.args.get('page', 1, type=int)
+    page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 20, type=int)
 
-    students = db.paginate(db.select(Student).where(Student.app_id == app_id), page=page_number, per_page=limit,max_per_page=100).items
+    students = db.paginate(db.select(Student).where(Student.app_id == app_id), page=page, per_page=limit,max_per_page=100).items
     
     schema = StudentSchema(many=True)
 

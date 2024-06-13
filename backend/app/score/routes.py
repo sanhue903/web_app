@@ -1,18 +1,45 @@
 from app.extensions import db
 from app.score import bp as app
-from app.models import Student, Score, Application, Chapter, Question, Aule
+from app.models import Student, Score, Application, Chapter, Question, User
 from app.schemas import PostScoreSchema, GetScoreSchema
 from marshmallow import ValidationError
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from flask import jsonify, request
 
 def get_scores_from_student():
     pass
 
-@jwt_required(locations=['cookies'])
 @app.route('/scores', methods=['GET'])
-def get_scores_from_students(aule_code):
+@jwt_required(locations=['headers'])
+def get_scores_from_students(app_id):
+    app = db.session.scalar(db.select(Application).where(Application.id == app_id))
+    if app is None:
+        return jsonify({'message': f'App with id {app_id} not found'}), 404
+    
+    user_id = get_jwt_identity()    
+    user = db.session.scalar(db.select(User).where(User.id == user_id))
+    if user is None:
+        return jsonify({'message': 'Unauthorized'}), 401
+    
+    #pagination
+    page = request.args.get('page', 1, type=int) 
+    limit = request.args.get('limit', 20, type=int)
+
+    #filters
+    chapter = request.args.get('chapter', None, type=str)
+    question = request.args.get('question', None, type=str)
+    attempt = request.args.get('attempts', 1, type=int)
+    
+    scores = db.paginate(db.select(Score).where(Score.student_id == Student.id).where(Student.app_id == app_id).where(Score.attempts == attempt), page=page, per_page=limit, max_per_page=100).items
+    
+    return jsonify({'message': 'Not implemented'}), 501
+    
+    
+    
+    
+    
+    
     aule_code = aule_code.upper()
     aule = db.session.scalar(db.select(Aule).where(Aule.code == aule_code))
     

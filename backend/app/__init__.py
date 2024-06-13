@@ -23,6 +23,8 @@ def create_app(config_class: Config= Development):
         create_database()
 
     # Register blueprints here
+    from app.route_test import bp as test_bp
+    app.register_blueprint(test_bp)
     
     from app.student import bp as student_bp
     app.register_blueprint(student_bp, url_prefix='/apps/<app_id>/students')

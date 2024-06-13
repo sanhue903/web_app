@@ -12,6 +12,7 @@ class Score(db.Model):
     seconds: Mapped[float] = mapped_column(default=0.0)
     is_correct: Mapped[bool] = mapped_column(default=False)
     date: Mapped[datetime.datetime] = mapped_column(db.DateTime(timezone=True), server_default=functions.now())
+    attempt: Mapped[int] = mapped_column(default=1)
 
     student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
     question_id: Mapped[str] = mapped_column(ForeignKey('question.id'))

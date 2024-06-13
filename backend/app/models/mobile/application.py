@@ -16,14 +16,11 @@ class Application(db.Model):
         self.id = id
         self.name = name
  
-        
     def set_password(self, password):
         self.password = generate_password_hash(password)
         
     def check_password(self, password):
         return check_password_hash(self.password, password)
-    
-
         
     def __repr__(self):
         return f'<App {self.id}: {self.name}>'
