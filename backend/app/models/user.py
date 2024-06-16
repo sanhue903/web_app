@@ -6,14 +6,13 @@ from app.extensions import db
 
 class User(db.Model):
     id:         Mapped[int] = mapped_column(primary_key=True)
-    username:   Mapped[str] = mapped_column(db.String(20), unique=True)
-    email:      Mapped[str] = mapped_column(db.String(40), unique=True)
+    email:      Mapped[str] = mapped_column(db.String(50), unique=True)
     password:   Mapped[str] = mapped_column()
+    is_admin:   Mapped[bool] = mapped_column(db.Boolean, default=False)
     
     aules: Mapped[List['Aule']] = db.relationship(backref='user', lazy=True)
     
-    def __init__(self, username, email, password):
-        self.username = username
+    def __init__(self, email, password):
         self.email = email
         self.set_password(password)
         
@@ -24,10 +23,9 @@ class User(db.Model):
         return check_password_hash(self.password, password)
     
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'<User {self.email}>'
     
     def serialize(self):
         return {
-            'username': self.username,
             'email': self.email,
         }

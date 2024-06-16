@@ -1,0 +1,61 @@
+{
+    "id": "BOTIQI",
+    "name": "El Botiquin de las Emociones",
+    "chapters": [
+        {
+            "id": "CONEMO",
+            "number": 1,
+            "name": "Conciencia Emocional",
+            "questions": []
+        },
+        {
+            "id": "REGEMO",
+            "number": 2,
+            "name": "Regulación Emocional",
+            "questions": []
+        },
+        {
+            "id": "AUTEMO",
+            "number": 3,
+            "name": "Autonomia Emocional",
+            "questions": [
+                {
+                    "id": "AUTE11",
+                    "number": 1,
+                    "text": "¿Cómo se sentia Jacinta en su primer dia de colegio?"
+                },
+                {
+                    "id": "AUTE12",
+                    "number": 2,
+                    "text": "¿Qué hizo Jacinta al darse cuenta que cambió de color?"
+                },
+                {
+                    "id": "AUTE13",
+                    "number": 3,
+                    "text": "¿Por qué Jacinta decidió mostrar sus colores?"
+                },
+                {
+                    "id": "AUTE14",
+                    "number": 4,
+                    "text": "¿Por qué es importante que Jacinta siga adelante, a pesar de sentirse avergonzada?"
+                },
+                {
+                    "id": "AUTE15",
+                    "number": 5,
+                    "text": "¿Por qué Jacinta hablaba sola frente al espejo cuando sentía que todos se reirían de ella por estar llena de colores?"
+                },
+                {
+                    "id": "AUTE16",
+                    "number": 6,
+                    "text": "¿Qué aprendió Jacinta cuando entró a la sala de clases y vio a todos los demás llenos de color también?"
+                }
+            ]
+        },
+        {
+            "id": "COMPMO",
+            "number": 4,
+            "name": "Competencia Emocional",
+            "questions": []
+        }
+    ]
+}

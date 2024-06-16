@@ -1,17 +1,21 @@
 from app.extensions import ma
+from app.models import Score
 from marshmallow import fields, validate
 
-class InnerScoreSchema(ma.Schema):
-    student_id = fields.Integer(required=True)
-    seconds = fields.Float(required=True)
-    is_correct = fields.Boolean(required=True)
-    answer = fields.String(required=True)
+class InnerScoreSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Score
+        load_instance = True
+        include_fk = True
+        exclude = ['id', 'question_id']
 
 class QuestionSchema(ma.Schema):
-    id = fields.Str(required=True, validate=validate.Length(equal=6))
-    score = fields.List(fields.Nested(InnerScoreSchema))
+    question = fields.Str(required=True, validate=validate.Length(equal=6))
+    scores = fields.List(fields.Nested(InnerScoreSchema))
+
+class ChapterSchema(ma.Schema):
+    chapter = fields.Str(required=True, validate=validate.Length(equal=6))
+    questions = fields.List(fields.Nested(QuestionSchema))
 
 class GetScoreSchema(ma.Schema):
-    id = fields.Str(required=True, validate=validate.Length(equal=6))
-    question = fields.List(fields.Nested(QuestionSchema))
-    load_instance = True
+    results = fields.List(fields.Nested(ChapterSchema))

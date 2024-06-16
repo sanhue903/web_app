@@ -7,7 +7,7 @@ from app.extensions import db
 
 class Application(db.Model):
     id: Mapped[str] = mapped_column(db.String(6), primary_key=True)
-    name: Mapped[str] = mapped_column(db.String(50))
+    name: Mapped[str] = mapped_column()
 
 
     chapters: Mapped[List['Chapter']] = db.relationship(backref='application', lazy=True)

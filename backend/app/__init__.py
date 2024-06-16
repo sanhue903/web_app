@@ -1,10 +1,10 @@
 from flask import Flask
 from flask_cors import CORS
-from config import *
+from config import Config, DevelopmentConfig, ProductionConfig
 
 from app.extensions import *
 
-def create_app(config_class: Config= Development):
+def create_app(config_class: Config= DevelopmentConfig):
     app = Flask(__name__)
     app.config.from_object(config_class)
     CORS(app)
@@ -43,7 +43,8 @@ def create_app(config_class: Config= Development):
     
     
     ### Swagger ###
-    app.register_blueprint(config_class.SWAGGER_BLUEPRINT, url_prefix=config_class.SWAGGER_URL)
+    if config_class is DevelopmentConfig:
+        app.register_blueprint(config_class.SWAGGER_BLUEPRINT, url_prefix=config_class.SWAGGER_URL)
 
     return app
 
@@ -57,9 +58,10 @@ def initial_data():
     app_id = 'BOTIKI'
 
     chapter_1 = Chapter('CONEMO', 1,'Conciencia Emocional', app_id)
+    db.session.add(chapter_1)
     db.session.commit()
     
-    question_1_1 = Question('CONEM1', 'CONEMO', '¿Como?')
+    question_1_1 = Question('CONEM1', 'CONEMO', '¿Como?', 1)
     db.session.add(question_1_1)
     db.session.commit()
 
@@ -71,12 +73,12 @@ def initial_data():
     db.session.add(chapter_3)
     db.session.commit()
     
-    question_3_1_1 = Question('AUTE11', 'AUTEMO', '¿Cómo se sentia Jacinta en su primer dia de colegio?')
-    question_3_1_2 = Question('AUTE12', 'AUTEMO', '¿Qué hizo Jacinta al darse cuenta que cambió de color?')
-    question_3_1_3 = Question('AUTE13', 'AUTEMO', '¿Por qué Jacinta decidió mostrar sus colores?')
-    question_3_1_4 = Question('AUTE14', 'AUTEMO', '¿Por qué es importante que Jacinta siga adelante, a pesar de sentirse avergonzada?')
-    question_3_1_5 = Question('AUTE15', 'AUTEMO', '¿Por qué Jacinta hablaba sola frente al espejo cuando sentía que todos se reirían de ella por estar llena de colores?')
-    question_3_1_6 = Question('AUTE16', 'AUTEMO', '¿Qué aprendió Jacinta cuando entró a la sala de clases y vio a todos los demás llenos de color también?')
+    question_3_1_1 = Question('AUTE11', 'AUTEMO', '¿Cómo se sentia Jacinta en su primer dia de colegio?', 1)
+    question_3_1_2 = Question('AUTE12', 'AUTEMO', '¿Qué hizo Jacinta al darse cuenta que cambió de color?', 2)
+    question_3_1_3 = Question('AUTE13', 'AUTEMO', '¿Por qué Jacinta decidió mostrar sus colores?', 3)
+    question_3_1_4 = Question('AUTE14', 'AUTEMO', '¿Por qué es importante que Jacinta siga adelante, a pesar de sentirse avergonzada?', 4)
+    question_3_1_5 = Question('AUTE15', 'AUTEMO', '¿Por qué Jacinta hablaba sola frente al espejo cuando sentía que todos se reirían de ella por estar llena de colores?', 5)
+    question_3_1_6 = Question('AUTE16', 'AUTEMO', '¿Qué aprendió Jacinta cuando entró a la sala de clases y vio a todos los demás llenos de color también?', 6)
     db.session.add(question_3_1_1)
     db.session.add(question_3_1_2)
     db.session.add(question_3_1_3)

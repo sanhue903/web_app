@@ -17,35 +17,47 @@ def get_students_from_app(app_id):
     user_id = get_jwt_identity()
     user = db.session.scalar(db.select(User).where(User.id == user_id))
     if user is None:
-        return jsonify({'message': 'Unauthorized'}), 401
+        return jsonify({'message': 'Unauthorized'}), 403
     
+    #pagination
     page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', 20, type=int)
+    limit = request.args.get('limit', None, type=int)
+    
+    #filters
+    age_equal = request.args.get('age', None, type=int)
+    age_low_bound = request.args.get('age[gte]', None, type=int)
+    age_high_bound = request.args.get('age[lte]', None, type=int)
+    
+    query = db.select(Student).where(Student.app_id == app_id)
+    
+    if age_equal is not None:
+        query = query.where(Student.age == age_equal)    
+    
+    if age_low_bound is not None:
+        query = query.where(Student.age >= age_low_bound)
+        
+    if age_high_bound is not None:
+        query = query.where(Student.age <= age_high_bound)
+         
 
-    students = db.paginate(db.select(Student).where(Student.app_id == app_id), page=page, per_page=limit,max_per_page=100).items
+    if limit is None:
+        students = db.session.scalars(query).all()
+    else:
+        students = db.paginate(query, page=page, per_page=limit,max_per_page=None, error_out=False).items
     
     schema = StudentSchema(many=True)
 
     return jsonify({'students': schema.dump(students)}), 200
-#TODO cambiar
-#@jwt_required(locations=['cookies'])
-#@app.route('/<aule_id>/students', methods=['GET'])
-#def get_students_from_aule(mobile_app_id, aule_id):       
-#    aule = db.get_or_404(Aule, aule_id, description=f'Aule with id {aule_id} not found')
-#    schema = StudentSchema(many=True)
-    
-#    return jsonify({'students': schema.dump(aule.students)}), 200
- 
   
 @app.route('',methods=['POST'])    
 @jwt_required(locations=['headers'])
 def post_student(app_id):
+    if get_jwt_identity() != app_id:
+        return jsonify({'message': 'Unauthorized'}), 403
+    
     app = db.session.scalar(db.select(Application).where(Application.id == app_id))
     if app is None:
         return jsonify({'message': f'App with id {app_id} not found'}), 404
-    
-    if get_jwt_identity() != app_id:
-        return jsonify({'message': 'Unauthorized'}), 401
     
     schema = StudentSchema()
 

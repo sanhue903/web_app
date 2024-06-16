@@ -3,117 +3,115 @@ from app import create_app
 from config import TestingConfig
 
 from app.extensions import db
-from app.models import Aule, User, Application, Chapter, Question, Student, Score
+from app.models import User, Application, Chapter, Question, Student, Score
+from flask_jwt_extended import create_access_token
 
 
-@pytest.fixture(scope='module') 
+@pytest.fixture(scope='function') 
 def test_client():
     flask_app = create_app(TestingConfig)
     
     with flask_app.test_client() as testing_client:
         with flask_app.app_context():
             yield testing_client
+            db.session.close_all()
+            db.drop_all()
 
-@pytest.fixture(scope='module')
-def create_base(test_client):
-    db.create_all()
-    
-    test_school = School('Test School', 'Chillan Viejo', 'Ñuble')
-    db.session.add(test_school)
-    
-    test_user = User('test_user', 'seba@test.cl', 'testtest')
+@pytest.fixture(scope='function')
+def mock_user(test_client):
+    test_user = User('test@test.cl', 'testtest')
     db.session.add(test_user)
-    
-    test_mobile_app = Application('TESAPP', 'Test App')
-    db.session.add(test_mobile_app)
-    
     db.session.commit()
     
-    test_aule = Aule(test_mobile_app.id, 'Test Aule', test_user.id, test_school.id, 'TESAU1') 
-    db.session.add(test_aule)
-    
-    test_aule_2 = Aule(test_mobile_app.id, 'Test Aule 2', test_user.id, test_school.id, 'TESAU2')
-    db.session.add(test_aule_2)
-    
-    db.session.commit()
-    
-    yield 
-    
-    db.drop_all()
-    
-@pytest.fixture(scope='function')    
-def create_students(test_client, create_base):
-    test_student = Student('Sebastian', 'Sanhueza', 'Bustamante', 22, 'TESAU1', 'TESAPP')
-    db.session.add(test_student)
-    
-    test_student_2 = Student('Sofia', 'Riquelme', 'Irribarra', 23, 'TESAU1', 'TESAPP')
-    db.session.add(test_student_2)
-    
-    test_student_3 = Student('Camilo', 'Jarpa', 'Gutierrez', 22, 'TESAU2', 'TESAPP')
-    db.session.add(test_student_3)
-    
-    db.session.commit()
-    
-    yield [test_student, test_student_2, test_student_3]
-    
-    db.session.delete(test_student)
-    db.session.delete(test_student_2)
-    db.session.delete(test_student_3)
-    db.session.commit()
-    
-@pytest.fixture(scope='module')
-def fill_app_mobile(test_client, create_base):
-    test_chapter = Chapter('TESCHA', 'Test Chapter', 'TESAPP')
-    db.session.add(test_chapter)
-    
-    test_chapter_2 = Chapter('TESCH2', 'Test Chapter 2', 'TESAPP')
-    db.session.add(test_chapter_2)
-    
-    
-    test_question = Question('TESQUE', 'Test Question', test_chapter.id)
-    db.session.add(test_question)
-    
-    test_question_2 = Question('TESQU2', 'Test Question 2', test_chapter.id)
-    db.session.add(test_question_2)
-    
-    test_question_3 = Question('TESQU3', 'Test Question 3', test_chapter_2.id)
-    db.session.add(test_question_3)
-    db.session.commit()
-    
-    yield [test_chapter, test_chapter_2, test_question, test_question_2, test_question_3]
+    yield {'user': test_user, 
+           'token':create_access_token(identity=test_user.id)
+        }
     
 @pytest.fixture(scope='function')
-def create_scores(test_client, create_base, create_students, fill_app_mobile):
-    test_student = create_students[0]
-    test_student_2 = create_students[1]
-
+def mock_application(test_client):
+    test_app = Application(id='TESAPP', name='Test Application')
+    db.session.add(test_app)
     
-    test_question = fill_app_mobile[2]
-    test_question_2 = fill_app_mobile[3]
-    test_question_3 = fill_app_mobile[4]
+    db.session.commit()
+   
+    yield {'app': test_app,
+           'token':create_access_token(identity=test_app.id)
+        } 
     
-    score = Score(test_student.id, test_question.id, seconds=10000, is_correct=1)
-    db.session.add(score)
+@pytest.fixture(scope='function')
+def mock_app_content(test_client, mock_application):
+    chapter1 = Chapter(id='TESCH1', app_id=mock_application['app'].id, number=1, name='Test Chapter 1')
+    db.session.add(chapter1)
     
-    score_2 = Score(test_student.id, test_question_2.id, seconds=20000, is_correct=2)
-    db.session.add(score_2)
+    chapter2 = Chapter(id='TESCH2', app_id=mock_application['app'].id, number=2, name='Test Chapter 2')
+    db.session.add(chapter2)
     
-    score_3 = Score(test_student_2.id, test_question.id, seconds=30000, is_correct=3)
-    db.session.add(score_3)
+    question1_1 = Question(id='TESQ11', chapter_id=chapter1.id, number=1, text='Test Question 1.1')
+    db.session.add(question1_1)
     
-    score_4 = Score(test_student_2.id, test_question_2.id, seconds=40000, is_correct=4)
-    db.session.add(score_4)
+    question1_2 = Question(id='TESQ12', chapter_id=chapter1.id, number=2, text='Test Question 1.2')
+    db.session.add(question1_2)
     
-    score_5 = Score(test_student_2.id, test_question_3.id, seconds=50000, is_correct=5)
-    db.session.add(score_5)
+    question2_1 = Question(id='TESQ21', chapter_id=chapter2.id, number=1, text='Test Question 2.1')
+    db.session.add(question2_1) 
+   
+    db.session.commit() 
+    yield mock_application
+    
+@pytest.fixture(scope='function')
+def mock_student(test_client, mock_application):
+    test_student1 = Student(app_id=mock_application['app'].id, name='Test Student', age=5)
+    db.session.add(test_student1)
+    db.session.commit()
+    
+    test_student2 = Student(app_id=mock_application['app'].id, name='Test Student 2', age=7)
+    db.session.add(test_student2)
+    db.session.commit()
+    
+    yield [test_student1, test_student2]
+    
+@pytest.fixture(scope='function')
+def mock_scores(test_client, mock_app_content, mock_student):
+    chapter1 = mock_app_content['app'].chapters[0]
+    
+    question1_1 = chapter1.questions[0]
+    question1_2 = chapter1.questions[1]
+    
+    chapter2 = mock_app_content['app'].chapters[1]
+    question2_1 = chapter2.questions[0]     
+    
+    # First student
+    score1 = Score(student_id=mock_student[0].id, question_id=question1_1.id, answer='wrong', seconds=10.0, is_correct=False, session=1)
+    db.session.add(score1)
+    
+    score2 = Score(student_id=mock_student[0].id, question_id=question1_1.id, answer='correct', seconds=3.7, is_correct=True, attempt=2, session=2)
+    db.session.add(score2)
+    
+    score3 = Score(student_id=mock_student[0].id, question_id=question1_2.id, answer='correct', seconds=5.8, is_correct=True, session=2)
+    db.session.add(score3)
+    
+    score4 = Score(student_id=mock_student[0].id, question_id=question2_1.id, answer='correct', seconds=2.8, is_correct=True, session=2)
+    db.session.add(score4)
+    
+    # Second student
+    score5 = Score(student_id=mock_student[1].id, question_id=question1_1.id, answer='correct', seconds=6.8, is_correct=True, session=1)
+    db.session.add(score5)
+    
+    score6 = Score(student_id=mock_student[1].id, question_id=question1_2.id, answer='wrong', seconds=4.8, is_correct=False, session=1)
+    db.session.add(score6)
+    
+    score7 = Score(student_id=mock_student[1].id, question_id=question1_2.id, answer='correct', seconds=2.8, is_correct=True, attempt=2, session=1)
+    db.session.add(score7)
+    
+    score8 = Score(student_id=mock_student[1].id, question_id=question2_1.id, answer='wrong', seconds=4.8, is_correct=False, session=1)
+    db.session.add(score8)
+    
+    score9 = Score(student_id=mock_student[1].id, question_id=question2_1.id, answer='wrong', seconds=1.8, is_correct=False, attempt=2, session=1)
+    db.session.add(score9)
+    
+    score10 = Score(student_id=mock_student[1].id, question_id=question2_1.id, answer='correct', seconds=2.3, is_correct=True, attempt=3, session=1)
+    db.session.add(score10)
     
     db.session.commit()
     
-    yield [score, score_2, score_3, score_4, score_5]
-    
-    db.session.delete(score)
-    db.session.delete(score_2)
-    db.session.delete(score_3)
-    db.session.delete(score_4)
-    db.session.delete(score_5)
-    db.session.commit()
+    yield mock_app_content, [score1, score2, score3, score4, score5, score6, score7, score8, score9, score10]
