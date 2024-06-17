@@ -11,6 +11,54 @@ from flask import jsonify, request
 def get_scores_from_student():
     pass
 
+def parse_json1(scores, app, chapter, question) -> Any:
+    results = []
+    for chapter_it in app.chapters if len(chapter) == 0 else chapter:
+        chapter_data = {
+                'chapter': chapter_it.id,
+                'questions': []
+            }
+        
+        for question_it in chapter_it.questions if len(question) == 0 else question:
+            question_data = {
+                'question': question_it.id,
+                'scores': []
+            }
+            
+            for score in scores[:]:
+                if score.question_id == question_it.id:
+                    question_data['scores'].append(score)
+                    scores.remove(score)
+                            
+            chapter_data['questions'].append(question_data)
+        
+        results.append(chapter_data)
+        
+    return {'results': results}
+
+def parse_json2(scores, app, chapter, question) -> Any:
+    results = []
+    for chapter_it in app.chapters if len(chapter) == 0 else chapter:     
+        for question_it in chapter_it.questions if len(question) == 0 else question:    
+            for score in scores[:]:
+                score_data = {
+                    'chapter': chapter_it.id,
+                    'question': question_it.id,
+                    'answer': score.answer,
+                    'attempt': score.attempt,
+                    'date': score.date,
+                    'is_correct': score.is_correct,
+                    'seconds': score.seconds,
+                    'session': score.session,
+                    'student_id': score.student_id
+                }
+                if score.question_id == question_it.id:
+                    results.append(score_data)
+                    scores.remove(score)
+                            
+        
+    return {'scores': results}
+
 @app.route('/scores', methods=['GET'])
 @jwt_required(locations=['headers'])
 def get_scores_from_students(app_id):
@@ -128,37 +176,22 @@ def get_scores_from_students(app_id):
         scores = db.session.scalars(query).all()
     else:
         scores = db.paginate(query, page=page, per_page=limit, max_per_page=None, error_out=False).items
-   
-    results = []
-    for chapter_it in app.chapters if len(chapter_filter) == 0 else chapter_filter:
-        chapter_data = {
-                'chapter': chapter_it.id,
-                'questions': []
-            }
-        
-        for question_it in chapter_it.questions if len(question_filter) == 0 else question_filter:
-            question_data = {
-                'question': question_it.id,
-                'scores': []
-            }
-            
-            for score in scores[:]:
-                if score.question_id == question_it.id:
-                    question_data['scores'].append(score)
-                    scores.remove(score)
-                            
-            chapter_data['questions'].append(question_data)
-        
-        results.append(chapter_data)
     
-    schema = GetScoreSchema()
-    try:
-        validated_data = schema.dump({'results': results})
-    except ValidationError as err:
-        return jsonify(err.messages), 422
+    data = parse_json2(scores, app, chapter_filter, question_filter)
+
+    return jsonify(data), 200
+    
+    ###
+    data = parse_json1(scores, app,chapter_filter, question_filter)
+    
+    #schema = GetScoreSchema()
+    #try:
+    #    validated_data = schema.dump(data)
+    #except ValidationError as err:
+    #    return jsonify(err.messages), 422
     
     
-    return jsonify(validated_data), 200
+    #return jsonify(validated_data), 200
     
     
 
