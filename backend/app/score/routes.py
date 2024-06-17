@@ -8,9 +8,6 @@ from typing import Any
 
 from flask import jsonify, request
 
-def get_scores_from_student():
-    pass
-
 def parse_json1(scores, app, chapter, question) -> Any:
     results = []
     for chapter_it in app.chapters if len(chapter) == 0 else chapter:
@@ -59,23 +56,148 @@ def parse_json2(scores, app, chapter, question) -> Any:
         
     return {'scores': results}
 
-@app.route('/scores', methods=['GET'])
+@app.route('/<student_id>/scores', methods=['GET'])
 @jwt_required(locations=['headers'])
-def get_scores_from_students(app_id):
+def get_scores_from_student(app_id, student_id):
+    user_id = get_jwt_identity()    
+    user = db.session.scalar(db.select(User).where(User.id == user_id))
+    
+    if user is None:
+        return jsonify({'message': 'Unauthorized'}), 403
     app = db.session.scalar(db.select(Application).where(Application.id == app_id))
+    
     if app is None:
         return jsonify({'message': f'App with id {app_id} not found'}), 404
     
+    student = db.session.scalar(db.select(Student).where(Student.id == student_id))
+    if student is None:
+        return jsonify({'message': f'Student with id {student_id} not found'}), 404
+    
+    #pagination
+    page = request.args.get('page', 1, type=int) 
+    limit = request.args.get('limit', None, type=int) 
+    
+    #filters
+    attempt_equal = request.args.get('attempt', None, type=int)
+    attempt_low_bound = request.args.get('attempt[gte]', None, type=int)
+    attempt_high_bound = request.args.get('attempt[lte]', None, type=int)
+
+    session_equal = request.args.get('session', None, type=int)
+    session_low_bound = request.args.get('session[gte]', None, type=int)
+    session_high_bound = request.args.get('session[lte]', None, type=int)
+
+    age_equal = request.args.get('age', None, type=int)
+    age_low_bound = request.args.get('age[gte]', None, type=int)
+    age_high_bound = request.args.get('age[lte]', None, type=int)    
+    
+    question_id = request.args.get('question', None, type=str)
+    chapter_id = request.args.get('chapter', None, type=str)
+
+
+    query = db.select(Score).where(Score.student_id == student_id)
+    #attempt filters
+    if attempt_equal is not None:
+        query = query.where(Score.attempt == attempt_equal)
+        
+    if attempt_low_bound is not None:
+        query = query.where(Score.attempt >= attempt_low_bound)
+    
+    if attempt_high_bound is not None:
+        query = query.where(Score.attempt <= attempt_high_bound)
+    
+    #session filters
+    if session_equal is not None:
+        query = query.where(Score.session == session_equal)
+        
+    if session_low_bound is not None:
+        query = query.where(Score.session >= session_low_bound)
+        
+    if session_high_bound is not None:
+        query = query.where(Score.session <= session_high_bound)
+    
+    #age filters
+    if [age_equal, age_low_bound, age_high_bound].count(None) != 3:
+        query = query.join(Student)
+    
+    if age_equal is not None:
+        query = query.where(Student.age == age_equal)
+        
+    if age_low_bound is not None:
+        query = query.where(Student.age >= age_low_bound)
+    
+    if age_high_bound is not None:
+        query = query.where(Student.age <= age_high_bound)
+    
+        
+    #chapter and question filters
+    if chapter_id is None and question_id is not None:
+        return jsonify({'message': 'You must provide a chapter id to filter by question'}), 400
+    
+    chapter_filter = []
+    question_filter = []
+    if chapter_id is not None:
+        if chapter_id.isdecimal():
+            query = query.join(Score.question).join(Question.chapter).where(Chapter.number == chapter_id)
+
+            chapter = db.session.scalar(db.select(Chapter).where(Chapter.number == chapter_id))
+            if chapter is None:
+                return jsonify({'message': f'Chapter with id {chapter_id} not found'}), 404
+             
+            chapter_filter.append(chapter)
+
+        else:
+            query = query.join(Score.question).where(Question.chapter_id == chapter_id)
+            
+            chapter = db.session.scalar(db.select(Chapter).where(Chapter.id == chapter_id))
+            if chapter is None:
+                return jsonify({'message': f'Chapter with id {chapter_id} not found'}), 404
+            
+            chapter_filter.append(chapter)
+                 
+    if question_id is not None:
+        if question_id.isdecimal():
+            query = query.where(Question.number == question_id)
+
+            question = db.session.scalar(db.select(Question).where(Question.number == question_id).where(Question.chapter_id == chapter.id))
+            if question is None:
+                return jsonify({'message': f'Question with id {question_id} not found'}), 404
+            
+            question_filter.append(question)
+            
+        else:
+            query = query.where(Score.question_id == question_id)
+            
+            question = db.session.scalar(db.select(Question).where(Question.id == question_id).where(Question.chapter_id == chapter.id))
+            if question is None:
+                return jsonify({'message': f'Question with id {question_id} not found'}), 404
+            
+            question_filter.append(question)
+    
+    if limit is None:
+        scores = db.session.scalars(query).all()
+    else:
+        scores = db.paginate(query, page=page, per_page=limit, max_per_page=None, error_out=False).items
+    
+    json = parse_json2(scores, app, chapter_filter, question_filter)
+
+    return jsonify(json), 200
+
+@app.route('/scores', methods=['GET'])
+@jwt_required(locations=['headers'])
+def get_scores_from_students(app_id):
     user_id = get_jwt_identity()    
     user = db.session.scalar(db.select(User).where(User.id == user_id))
     if user is None:
         return jsonify({'message': 'Unauthorized'}), 403
     
+    app = db.session.scalar(db.select(Application).where(Application.id == app_id))
+    if app is None:
+        return jsonify({'message': f'App with id {app_id} not found'}), 404
     
     #pagination
     page = request.args.get('page', 1, type=int) 
     limit = request.args.get('limit', None, type=int) 
-
+    
     #filters
     attempt_equal = request.args.get('attempt', None, type=int)
     attempt_low_bound = request.args.get('attempt[gte]', None, type=int)
@@ -177,9 +299,9 @@ def get_scores_from_students(app_id):
     else:
         scores = db.paginate(query, page=page, per_page=limit, max_per_page=None, error_out=False).items
     
-    data = parse_json2(scores, app, chapter_filter, question_filter)
+    json = parse_json2(scores, app, chapter_filter, question_filter)
 
-    return jsonify(data), 200
+    return jsonify(json), 200
     
     ###
     data = parse_json1(scores, app,chapter_filter, question_filter)
