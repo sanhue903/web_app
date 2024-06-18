@@ -14,7 +14,7 @@ class DevelopmentConfig(Config):
     load_dotenv(os.path.join(BASE_DIR, '.env'))
     DEBUG = True
     SECRET_KEY = 'dev'
-    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:903903@localhost:5432/memoria'
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://admin:P.Q-37sop@localhost:5432/pruebas'
     
     SWAGGER_URL = '/swagger'
     API_URL = '/static/swagger.json'
