@@ -1,26 +1,38 @@
 import React, { useState, useEffect } from 'react';
 
 function StudentsInfo() {
-    const [data, setData] = useState(null);
-  
+    const token = localStorage.getItem('token');
+    const [students, setStudents] = useState([]);
+
     useEffect(() => {
-        fetch('/')
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((data) => setData(data.message))
-          .catch((error) => {
-            console.error('Error:', error);
-          });
-      }, []);
+      fetch('/apps/BOTIQI/students', { 
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setStudents(data.students);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+    }, [token]);
   
     return (
       <div>
-        {data ? <p>{ data }</p> : 'Cargando...'}
-      </div>
+      {students.map((student, index) => (
+        <div key={index}>
+          <p>Name: {student.name}</p>
+          <p>Age: {student.age}</p>
+          <p>App ID: {student.app_id}</p>
+          <p>Session: {student.session}</p>
+          <hr />
+        </div>
+      ))}
+    </div>
     );
   }
 
