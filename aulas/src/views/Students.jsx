@@ -1,12 +1,14 @@
 import React from 'react'
 import '../css/Students.css'
-import StudentsInfo from '../components/StudentsInfo'
+import StudentsTable from '../components/StudentsTable'
+import StudentsGraphic from '../components/StudentsGraphic'
 
 function Students() {
   return (
     <div>
-      <h1>Students</h1>
-      <StudentsInfo />
+      <h1>Estudiantes</h1>
+      <StudentsGraphic />
+      <StudentsTable />
     </div>
   )
 }
